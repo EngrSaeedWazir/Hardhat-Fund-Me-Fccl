@@ -57,9 +57,11 @@ contract FundMe {
 
     // 21508 gas, immutable
     //23644 gas, without immutable
+    AggregatorV3Interface public priceFeed;
 
-    constructor() {
+    constructor(address priceFeedAddress) {
         owner = msg.sender;
+        priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
     function Fund() public payable {
@@ -70,7 +72,7 @@ contract FundMe {
 
         //require(getConversionRate(msg.value) >= minimumUsd, "Donot Send Enough"); //1e18 == 1*10**18= 1000000000000000000
         require(
-            msg.value.getConversionRate() >= minimumUsd,
+            msg.value.getConversionRate(priceFeed) >= minimumUsd,
             "You need to spend more ETH!"
         ); //value paramter pass to function in Library
 
