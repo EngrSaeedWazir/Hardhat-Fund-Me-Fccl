@@ -3,7 +3,10 @@
 //Set A minimum Funding Value in USD
 
 //SPDX-License-Identifier: MIT
+
+//Prama
 pragma solidity ^0.8.17; // You can use other version See Slides for more info
+//Imports
 
 /* interface AggregatorV3Interface {                     // We are importing it by Link because this a an                                                   //
   function decimals() external view returns (uint8);    // an ugly practice
@@ -37,33 +40,65 @@ pragma solidity ^0.8.17; // You can use other version See Slides for more info
 
 import "./PriceConverter.sol";
 
+//error code
+
 // Constant, immutable
 //	841840 gas
 //  822310 gas
 //-------------
-//error NotOwner();// for revert use which is ga efficient
+//error FundMe__NotOwner();// for revert use which is ga efficient
+
+/**@title A sample Funding Contract
+ * @author EngrSaeedWazir
+ * @notice This contract is for creating a sample funding contract
+ * @dev This implements price feeds as our library
+ */
 
 contract FundMe {
+    //type Declaration //styeguide
     using PriceConverter for uint256;
     //uint256 public number; // For Now Commented it
-    uint256 public constant minimumUsd = 50 * 1e18; //1*10**18
+
     //	21371 gas, for constant in view function
     //23,400 gas , for non-constant in view function
 
-    address[] public funders; // All the addreses who funded
+    //State variables //styeguide
+
     mapping(address => uint256) public addressToAmountFounded; // map to specific address
+    address[] public funders; // All the addreses who funded
 
     address public immutable owner; //a global variable
+    uint256 public constant minimumUsd = 50 * 1e18; //1*10**18
 
     // 21508 gas, immutable
     //23644 gas, without immutable
     AggregatorV3Interface public priceFeed;
+
+    // Events (we have none!)
+
+    // Modifiers
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Sender is not owner"); //NotOwner());
+        //if(msg.sender !=owner){revert FundMe__NotOwner();}
+        _;
+    }
+
+    // Functions Order:
+    //// constructor
+    //// receive
+    //// fallback
+    //// external
+    //// public
+    //// internal
+    //// private
+    //// view / pure
 
     constructor(address priceFeedAddress) {
         owner = msg.sender;
         priceFeed = AggregatorV3Interface(priceFeedAddress);
     }
 
+    /// @notice Funds our contract based on the ETH/USD price
     function Fund() public payable {
         //Want to be able to Send a minimum fund amount in USD
         //1.  How do we send ETH to this conaract
@@ -114,12 +149,6 @@ contract FundMe {
         //msg.sender=address
         //payable(msg.sender)=payable address
         //payable(msg.sender).transfer(address(this).balance);
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner, "Sender is not owner"); //NotOwner());
-        //if(msg.sender !=owner){revert NotOwner();}
-        _;
     }
 
     // what happen if some one send eth without calling the fund function
