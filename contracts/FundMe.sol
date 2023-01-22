@@ -63,15 +63,15 @@ contract FundMe {
     //23,400 gas , for non-constant in view function
 
     //State variables //styeguide
-    mapping(address => uint256) public s_addressToAmountFunded; // map to specific address
-    address[] public s_funders; // All the addreses who funded
+    mapping(address => uint256) private s_addressToAmountFunded; // map to specific address
+    address[] private s_funders; // All the addreses who funded
 
-    address public immutable i_owner; //a global variable
+    address private immutable i_owner; //a global variable
     uint256 public constant MINIMUM_USD = 50 * 1e18; //1*10**18
 
     // 21508 gas, immutable
     //23644 gas, without immutable
-    AggregatorV3Interface public s_priceFeed;
+    AggregatorV3Interface private s_priceFeed;
 
     // Events (we have none!)
 
@@ -165,6 +165,32 @@ contract FundMe {
         // payable(msg.sender).transfer(address(this).balance);
         (bool success, ) = i_owner.call{value: address(this).balance}("");
         require(success);
+    }
+
+    /** @notice Gets the amount that an address has funded
+     *  @param fundingAddress the address of the funder
+     *  @return the amount funded
+     */
+    function getAddressToAmountFunded(
+        address fundingAddress
+    ) public view returns (uint256) {
+        return s_addressToAmountFunded[fundingAddress];
+    }
+
+    function getVersion() public view returns (uint256) {
+        return s_priceFeed.version();
+    }
+
+    function getFunder(uint256 index) public view returns (address) {
+        return s_funders[index];
+    }
+
+    function getOwner() public view returns (address) {
+        return i_owner;
+    }
+
+    function getPriceFeed() public view returns (AggregatorV3Interface) {
+        return s_priceFeed;
     }
 
     // what happen if some one send eth without calling the fund function
